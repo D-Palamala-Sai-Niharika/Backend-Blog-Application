@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.application.blog.exception.ApiResponse;
+import com.application.blog.payloads.ApiResponse;
 import com.application.blog.payloads.UserDto;
 import com.application.blog.service.UserService;
 

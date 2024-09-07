@@ -1,4 +1,4 @@
-package com.application.blog.exception;
+package com.application.blog.payloads;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

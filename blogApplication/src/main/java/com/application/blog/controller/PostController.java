@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.application.blog.payloads.ApiResponse;
 import com.application.blog.payloads.PostDto;
+import com.application.blog.payloads.PostResponse;
 import com.application.blog.service.PostService;
+import com.application.blog.constants.AppConstants;
 
 import jakarta.validation.Valid;
 
@@ -38,13 +40,26 @@ public class PostController {
 	
 	//get all posts - use same controller/api with different requestparams
 	//pagination - pageSize, pageNumber
-	//sorting - asc, desc
+	//sorting - column, asc/desc
 	//searching - search posts by title - keyword
 	//get posts created between - startDate, endDate
 	//ex:http://localhost:8081/posts?pazeSize=5&pageNo=2&sortBy=title
 	@GetMapping(value="/posts",produces="application/json")
-	public ResponseEntity<List<PostDto>> getAllPosts(){
-		List<PostDto> postDtos=this.postService.getAllPosts();
+	public ResponseEntity<PostResponse> getAllPosts(
+			 // @RequestParam(value="pageNumber", defaultValue="0", required=false) Integer pageNumber, 
+			  @RequestParam(value="pageNumber", defaultValue=AppConstants.DEFAULT_PAGE_NUMBER, required=false) Integer pageNumber,  //static variables are accessed without object creation with class name
+			  @RequestParam(value="pageSize", defaultValue=AppConstants.DEFAULT_PAGE_SIZE, required=false) Integer pageSize,
+			  @RequestParam(value="sortBy", defaultValue=AppConstants.DEFAULT_POSTS_SORT_BY, required=false)  String sortBy, //default value based on column name postId/title/...
+			  @RequestParam(value="sortDir", defaultValue=AppConstants.DEFAULT_SORT_DIR, required=false) String sortDir
+			){
+		PostResponse postResponse=this.postService.getAllPosts(pageNumber, pageSize, sortBy, sortDir);
+		return ResponseEntity.ok(postResponse);
+	}
+	
+	//search posts
+	@GetMapping("/search/{keyword}/posts")
+	public ResponseEntity<List<PostDto>> searchPosts(@PathVariable("keyword") String searchKeyword){
+		List<PostDto> postDtos=this.postService.searchPostsByTitle(searchKeyword);
 		return ResponseEntity.ok(postDtos);
 	}
 	

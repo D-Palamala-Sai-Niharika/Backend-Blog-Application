@@ -6,9 +6,14 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import com.application.blog.payloads.PostDto;
+import com.application.blog.payloads.PostResponse;
 import com.application.blog.exception.ResourceNotFoundException;
 import com.application.blog.entity.Post;
 import com.application.blog.entity.User;
@@ -48,10 +53,35 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public List<PostDto> getAllPosts() {
-		List<Post> posts=this.postRepo.findAll();
-		List<PostDto> postDtos=posts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
-		return postDtos;
+	public PostResponse getAllPosts(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
+		//Page<T> pages=repo.findAll(Pageable pageable);
+		//Sort sort=Sort.by(columnName).ascending();
+		//pageable=PageRequest.of(pageNumber,pageSize,sort)
+		//first sorts based on param and then returns details with page no & page size mentioned
+		//pages - getContent(), getNumber(), getSize(), getNumberOfElements(), getTotalElements(), getTotalPages(), isLast()
+		//https://www.perplexity.ai/search/getmapping-value-posts-produce-BY09FVgvSmKuz9WLxcqV1Q
+		
+//		Sort sort=null;
+//		if(sortDir.equalsIgnoreCase("asc")) {
+//			sort=Sort.by(sortBy).ascending();
+//		}else {
+//			sort=Sort.by(sortBy).descending();
+//		}
+		
+		Sort sort=sortDir.equalsIgnoreCase("asc")?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
+		Pageable pagination=PageRequest.of(pageNumber, pageSize,sort);
+		Page<Post> posts=this.postRepo.findAll(pagination);
+		List<Post> getPosts=posts.getContent();
+		List<PostDto> postDtos=getPosts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
+		PostResponse postResponse=new PostResponse();
+		postResponse.setContent(postDtos);
+		postResponse.setPageNumber(posts.getNumber());
+		postResponse.setPageSize(posts.getSize());
+		postResponse.setNoOfElements(posts.getNumberOfElements());
+		postResponse.setTotalElements(posts.getTotalElements());
+		postResponse.setTotalPages(posts.getTotalPages());
+		postResponse.setLast(posts.isLast());
+		return postResponse;
 	}
 
 	@Override
@@ -78,7 +108,13 @@ public class PostServiceImpl implements PostService {
 	
 	@Override
 	public List<PostDto> searchPostsByTitle(String keyword) {
-		List<Post> posts=this.postRepo.findByTitle(keyword);
+		//Derived Custom Method
+		//List<Post> posts=this.postRepo.findByTitleContaining(keyword);
+		//JPQL
+		//List<Post> posts=this.postRepo.getPostsByTitleContaining("%"+keyword+"%");
+		//List<Post> posts=this.postRepo.getPostsByTitleContaining(keyword);
+		//Native Query
+		List<Post> posts=this.postRepo.getPostsByTitleContaining(keyword);
 		List<PostDto> postDtos=posts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList()); 
 		return postDtos;
 	}

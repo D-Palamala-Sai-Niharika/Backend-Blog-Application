@@ -4,13 +4,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.application.blog.payloads.PostDto;
+import com.application.blog.payloads.PostResponse;
 
 public interface PostService {
 	
 	//create post
 	PostDto createPost(PostDto postDto,Integer userId,Integer categoryId);
 	//get all posts
-	List<PostDto> getAllPosts();
+	PostResponse getAllPosts(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
 	//get post by post id
 	PostDto getPostById(Integer postId);
 	//get all posts of a user

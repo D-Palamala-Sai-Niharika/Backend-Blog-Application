@@ -1,6 +1,8 @@
 package com.application.blog.service.Impl;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,29 +60,11 @@ public class PostServiceImpl implements PostService {
 		//Sort sort=Sort.by(columnName).ascending();
 		//pageable=PageRequest.of(pageNumber,pageSize,sort)
 		//first sorts based on param and then returns details with page no & page size mentioned
-		//pages - getContent(), getNumber(), getSize(), getNumberOfElements(), getTotalElements(), getTotalPages(), isLast()
+		//argument input - pageable, returns - Page , page -  getContent(), getNumber(), getSize(), getNumberOfElements(), getTotalElements(), getTotalPages(), isLast()
 		//https://www.perplexity.ai/search/getmapping-value-posts-produce-BY09FVgvSmKuz9WLxcqV1Q
-		
-//		Sort sort=null;
-//		if(sortDir.equalsIgnoreCase("asc")) {
-//			sort=Sort.by(sortBy).ascending();
-//		}else {
-//			sort=Sort.by(sortBy).descending();
-//		}
-		
-		Sort sort=sortDir.equalsIgnoreCase("asc")?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
-		Pageable pagination=PageRequest.of(pageNumber, pageSize,sort);
-		Page<Post> posts=this.postRepo.findAll(pagination);
-		List<Post> getPosts=posts.getContent();
-		List<PostDto> postDtos=getPosts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
-		PostResponse postResponse=new PostResponse();
-		postResponse.setContent(postDtos);
-		postResponse.setPageNumber(posts.getNumber());
-		postResponse.setPageSize(posts.getSize());
-		postResponse.setNoOfElements(posts.getNumberOfElements());
-		postResponse.setTotalElements(posts.getTotalElements());
-		postResponse.setTotalPages(posts.getTotalPages());
-		postResponse.setLast(posts.isLast());
+		Pageable pageable=this.pagingAndSorting(pageNumber, pageSize, sortBy, sortDir);
+		Page<Post> posts=this.postRepo.findAll(pageable);
+		PostResponse postResponse=this.createPostResponse(posts);
 		return postResponse;
 	}
 
@@ -91,19 +75,21 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public List<PostDto> getAllPostsOfUser(Integer userId) {
+	public PostResponse getAllPostsOfUser(Integer userId, Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
 		User user=this.userRepo.findById(userId).orElseThrow(()->new ResourceNotFoundException("User","Id",userId));
-		List<Post> posts=this.postRepo.findByUser(user);
-		List<PostDto> postDtos=posts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
-		return postDtos;
+		Pageable pageable=this.pagingAndSorting(pageNumber, pageSize, sortBy, sortDir);
+		Page<Post> posts=this.postRepo.findByUser(user,pageable);
+		PostResponse postResponse=this.createPostResponse(posts);
+		return postResponse;
 	}
 
 	@Override
-	public List<PostDto> getAllPostOfCategory(Integer categoryId) {
+	public PostResponse getAllPostOfCategory(Integer categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
 		Category category=this.categoryRepo.findById(categoryId).orElseThrow(()->new ResourceNotFoundException("Category","Id",categoryId));
-		List<Post> posts=this.postRepo.findByCategory(category);
-		List<PostDto> postDtos=posts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
-		return postDtos;
+		Pageable pageable=this.pagingAndSorting(pageNumber, pageSize, sortBy, sortDir);
+		Page<Post> posts=this.postRepo.findByCategory(category,pageable);
+		PostResponse postResponse=this.createPostResponse(posts);
+		return postResponse;
 	}
 	
 	@Override
@@ -114,13 +100,33 @@ public class PostServiceImpl implements PostService {
 		//List<Post> posts=this.postRepo.getPostsByTitleContaining("%"+keyword+"%");
 		//List<Post> posts=this.postRepo.getPostsByTitleContaining(keyword);
 		//Native Query
-		List<Post> posts=this.postRepo.getPostsByTitleContaining(keyword);
+		List<Post> posts=this.postRepo.findByTitleContainingIgnoreCase(keyword);
 		List<PostDto> postDtos=posts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList()); 
 		return postDtos;
 	}
 	
 	@Override
-	public List<PostDto> getPostsCreatedBetween(LocalDateTime startDate, LocalDateTime endDate) {
+	public List<PostDto> getPostsCreatedBetween(String startDateStr, String endDateStr) {
+		//http://localhost:8081/api/filter/posts?startDate=2024-09-13T15:06:29&endDate=2024-09-14T16:06:29
+		LocalDateTime startDate = null;
+		LocalDateTime endDate = null;
+
+		// Define a custom date format if needed
+		//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+		// Parse the startDate and endDate strings
+		try {
+		    if (startDateStr != null && !startDateStr.isEmpty()) {
+		        //startDate = LocalDateTime.parse(startDateStr, formatter);
+		        startDate = LocalDateTime.parse(startDateStr);
+		    }
+		    if (endDateStr != null && !endDateStr.isEmpty()) {
+		        //endDate = LocalDateTime.parse(endDateStr, formatter);
+		    	 endDate = LocalDateTime.parse(endDateStr);
+		    }
+		} catch (DateTimeParseException e) {
+		        throw new IllegalArgumentException("Invalid date format. Please use 'yyyy-MM-dd'T'HH:mm:ss'");
+		}
 		List<Post> posts=this.postRepo.findByCreatedAtBetween(startDate, endDate);
 		List<PostDto> postDtos=posts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList()); 
 		return postDtos;
@@ -141,6 +147,32 @@ public class PostServiceImpl implements PostService {
 	public void deletePost(Integer postId) {
 		Post post=this.postRepo.findById(postId).orElseThrow(()->new ResourceNotFoundException("Post","Id",postId));
 		this.postRepo.delete(post);
+	}
+	
+	public Pageable pagingAndSorting(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
+//		Sort sort=null;
+//		if(sortDir.equalsIgnoreCase("asc")) {
+//			sort=Sort.by(sortBy).ascending();
+//		}else {
+//			sort=Sort.by(sortBy).descending();
+//		}
+		Sort sort=sortDir.equalsIgnoreCase("asc")?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
+		Pageable pagination=PageRequest.of(pageNumber, pageSize,sort);
+		return pagination;
+	}
+
+	public PostResponse createPostResponse(Page<Post> posts) {
+		PostResponse postResponse=new PostResponse();
+		List<Post> postsOfUser=posts.getContent();
+		List<PostDto> postDtos=postsOfUser.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
+		postResponse.setContent(postDtos);
+		postResponse.setPageNumber(posts.getNumber());
+		postResponse.setPageSize(posts.getSize());
+		postResponse.setNoOfElements(posts.getNumberOfElements());
+		postResponse.setTotalElements(posts.getTotalElements());
+		postResponse.setTotalPages(posts.getTotalPages());
+		postResponse.setLast(posts.isLast());
+		return postResponse;
 	}
 
 }

@@ -63,6 +63,17 @@ public class PostController {
 		return ResponseEntity.ok(postDtos);
 	}
 	
+	//
+	@GetMapping("/filter/posts")
+	public ResponseEntity<List<PostDto>> filterPostsByCreatedAtBetween(
+			@RequestParam(value="startDate",required=false) String startDate,
+			@RequestParam(value="endDate",required=false) String endDate
+		){
+		
+		List<PostDto> postDtos=this.postService.getPostsCreatedBetween(startDate, endDate);
+		return ResponseEntity.ok(postDtos);
+	}
+	
 	//get post by post id
 	@GetMapping("/post/{postId}")
 	public ResponseEntity<PostDto> getPostById(@PathVariable Integer postId){
@@ -72,16 +83,28 @@ public class PostController {
 
 	//get all posts of a user
 	@GetMapping("/user/{userId}/posts")
-	public ResponseEntity<List<PostDto>> getAllPostsOfUser(@PathVariable Integer userId){
-		List<PostDto> postDtos=this.postService.getAllPostsOfUser(userId);
-		return ResponseEntity.ok(postDtos);
+	public ResponseEntity<PostResponse> getAllPostsOfUser(
+			@PathVariable Integer userId,
+			@RequestParam(value="pageNumber", defaultValue=AppConstants.DEFAULT_PAGE_NUMBER, required=false) Integer pageNumber, 
+			@RequestParam(value="pageSize", defaultValue=AppConstants.DEFAULT_PAGE_SIZE, required=false) Integer pageSize,
+			@RequestParam(value="sortBy", defaultValue=AppConstants.DEFAULT_POSTS_SORT_BY, required=false)  String sortBy, 
+			@RequestParam(value="sortDir", defaultValue=AppConstants.DEFAULT_SORT_DIR, required=false) String sortDir
+		){
+		PostResponse postResponse=this.postService.getAllPostsOfUser(userId, pageNumber, pageSize, sortBy, sortDir);
+		return ResponseEntity.ok(postResponse);
 	}
 	
 	//get all posts in a category
 	@GetMapping("/category/{categoryId}/posts")
-	public ResponseEntity<List<PostDto>> getAllPostsOfCategory(@PathVariable Integer categoryId){
-		List<PostDto> postDtos=this.postService.getAllPostOfCategory(categoryId);
-		return ResponseEntity.ok(postDtos);
+	public ResponseEntity<PostResponse> getAllPostsOfCategory(
+			@PathVariable Integer categoryId,
+			@RequestParam(value="pageNumber", defaultValue=AppConstants.DEFAULT_PAGE_NUMBER, required=false) Integer pageNumber, 
+			@RequestParam(value="pageSize", defaultValue=AppConstants.DEFAULT_PAGE_SIZE, required=false) Integer pageSize,
+			@RequestParam(value="sortBy", defaultValue=AppConstants.DEFAULT_POSTS_SORT_BY, required=false)  String sortBy,
+			@RequestParam(value="sortDir", defaultValue=AppConstants.DEFAULT_SORT_DIR, required=false) String sortDir
+		){
+		PostResponse postResponse=this.postService.getAllPostOfCategory(categoryId, pageNumber, pageSize, sortBy, sortDir);
+		return ResponseEntity.ok(postResponse);
 	}
 
 	//update a post

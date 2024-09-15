@@ -1,6 +1,5 @@
 package com.application.blog.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import com.application.blog.payloads.PostDto;
@@ -15,13 +14,15 @@ public interface PostService {
 	//get post by post id
 	PostDto getPostById(Integer postId);
 	//get all posts of a user
-	List<PostDto> getAllPostsOfUser(Integer userId);
+	//List<PostDto> getAllPostsOfUser(Integer userId);
+	PostResponse getAllPostsOfUser(Integer userId, Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
 	//get all posts in a category
-	List<PostDto> getAllPostOfCategory(Integer categoryId);
+	//List<PostDto> getAllPostOfCategory(Integer categoryId);
+	PostResponse getAllPostOfCategory(Integer categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
 	//search posts by title
 	List<PostDto> searchPostsByTitle(String keyword);
 	//find posts created between
-	List<PostDto> getPostsCreatedBetween(LocalDateTime startDate,LocalDateTime endDate);
+	List<PostDto> getPostsCreatedBetween(String startDate,String endDate);
 	//update a post
 	PostDto updatePost(PostDto postDto, Integer postId);
 	//delete a post

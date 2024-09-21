@@ -25,7 +25,7 @@ public class PostDto {
 	@Size(max=100000, message="Content can not exceed 10000 characters !")
 	private String content;                 // title, desc, content,img taken from postdto
 	
-	private String image;
+	private String coverImage;
 	
 	private LocalDateTime createdAt;        // set in backend , so optional
 	private LocalDateTime modifiedAt;

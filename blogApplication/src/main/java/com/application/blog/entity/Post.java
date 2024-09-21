@@ -36,7 +36,7 @@ public class Post {
 	@Column(length=100000)
 	private String content;
 	
-	private String image;
+	private String coverImage;
 	
 	private LocalDateTime createdAt;
 	private LocalDateTime modifiedAt;

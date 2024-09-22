@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -14,15 +15,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import com.application.blog.payloads.CommentDto;
 import com.application.blog.payloads.PostDto;
 import com.application.blog.payloads.PostResponse;
 import com.application.blog.exception.ResourceNotFoundException;
 import com.application.blog.entity.Post;
 import com.application.blog.entity.User;
 import com.application.blog.entity.Category;
+import com.application.blog.entity.Comment;
 import com.application.blog.repository.CategoryRepository;
 import com.application.blog.repository.PostRepository;
 import com.application.blog.repository.UserRepository;
+import com.application.blog.service.CommentService;
 import com.application.blog.service.PostService;
 
 @Service
@@ -36,6 +40,9 @@ public class PostServiceImpl implements PostService {
 	
 	@Autowired
 	private CategoryRepository categoryRepo;
+	
+	@Autowired
+	private CommentService commentService;
 	
 	@Autowired
 	private ModelMapper modelMapper;
@@ -71,6 +78,9 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public PostDto getPostById(Integer postId) {
 		Post post=this.postRepo.findById(postId).orElseThrow(()->new ResourceNotFoundException("Post","Id",postId));
+		Set<CommentDto> commentDtos=this.commentService.getCommentsOfPost(postId);
+		Set<Comment> comments=commentDtos.stream().map((commentDto)->this.modelMapper.map(commentDto, Comment.class)).collect(Collectors.toSet());
+		post.setComments(comments);
 		return this.modelMapper.map(post,PostDto.class);
 	}
 

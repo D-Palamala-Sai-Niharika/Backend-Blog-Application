@@ -155,4 +155,5 @@ public class PostController {
 		}
 		StreamUtils.copy(resource,response.getOutputStream());
 	}
+	
 }

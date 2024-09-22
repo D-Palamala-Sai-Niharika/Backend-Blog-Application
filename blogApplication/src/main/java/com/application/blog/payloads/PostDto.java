@@ -1,6 +1,7 @@
 package com.application.blog.payloads;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,5 +33,7 @@ public class PostDto {
 	
 	private CategoryDto category;         // categoryDto, userDto taken from pathVariable
 	private UserDto user;                 // Dto does not have post info so no loop of execution
+	
+	private Set<CommentDto> comments;
 
 }

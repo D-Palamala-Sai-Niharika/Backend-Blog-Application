@@ -27,4 +27,7 @@ public interface PostService {
 	PostDto updatePost(PostDto postDto, Integer postId);
 	//delete a post
 	void deletePost(Integer postId);
+	//likes
+	void toggleLike(Integer postId, Integer userId);
+	Integer getLikesCount(Integer postId);
 }

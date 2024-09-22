@@ -184,5 +184,23 @@ public class PostServiceImpl implements PostService {
 		postResponse.setLast(posts.isLast());
 		return postResponse;
 	}
+	
+	@Override
+	public void toggleLike(Integer postId, Integer userId) {
+	    Post post = this.postRepo.findById(postId).orElseThrow(() -> new ResourceNotFoundException("Post", "postId", postId));
+	       if (post.getLikedByUserIds().contains(userId)) {
+	           // Remove like if already liked.
+	           post.getLikedByUserIds().remove(userId);
+	       } else {
+	           // Add like if not already liked.
+	           post.getLikedByUserIds().add(userId);
+	       }
+	       this.postRepo.save(post);
+	}
+
+	public Integer getLikesCount(Integer postId) {
+	    Post post = postRepo.findById(postId).orElseThrow(() -> new ResourceNotFoundException("Post", "postId", postId));
+	    return post.getLikedByUserIds().size();
+    }
 
 }

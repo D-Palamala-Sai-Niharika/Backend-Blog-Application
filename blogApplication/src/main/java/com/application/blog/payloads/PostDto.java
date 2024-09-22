@@ -35,5 +35,8 @@ public class PostDto {
 	private UserDto user;                 // Dto does not have post info so no loop of execution
 	
 	private Set<CommentDto> comments;
+	
+	// Set of user IDs who liked this post
+    private Set<Integer> likedByUserIds;
 
 }

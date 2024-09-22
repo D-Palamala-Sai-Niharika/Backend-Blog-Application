@@ -2,7 +2,9 @@ package com.application.blog.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +30,7 @@ import com.application.blog.payloads.PostResponse;
 import com.application.blog.service.FileService;
 import com.application.blog.service.PostService;
 import com.application.blog.constants.AppConstants;
+import com.application.blog.exception.ResourceNotFoundException;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -155,5 +158,15 @@ public class PostController {
 		}
 		StreamUtils.copy(resource,response.getOutputStream());
 	}
+
+	// Toggle like for a specific post 
+	@PostMapping("/user/{userId}/post/{postId}/like") 
+	public ResponseEntity<Map<String,Object>> toggleLike(@PathVariable Integer postId, @PathVariable Integer userId) { 
+		Map<String,Object> response=new HashMap<>(); 
+		this.postService.toggleLike(postId,userId); 
+		response.put("message","Like toggled successfully"); 
+		response.put("likesCount",postService.getLikesCount(postId)); 
+		return ResponseEntity.ok(response); 
+	} 
 	
 }

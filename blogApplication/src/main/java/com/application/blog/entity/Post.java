@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -56,6 +58,11 @@ public class Post {
 	
 	@OneToMany(mappedBy="post",cascade=CascadeType.ALL, fetch=FetchType.LAZY)
 	private Set<Comment> comments=new HashSet(); 
+	
+	@ElementCollection
+	@CollectionTable(name = "post_likes", joinColumns = @JoinColumn(name = "post_id"))
+	@Column(name = "user_id")
+	private Set<Integer> likedByUserIds = new HashSet<>();
 	
 	
 }
